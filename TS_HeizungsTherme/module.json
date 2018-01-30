@@ -1,0 +1,11 @@
+{
+	"id": "{fe3450c6-c787-11e7-abc4-cec278b6b50a}",
+	"name": "TS_HeizungsTherme",
+	"type": 3,
+	"vendor": "",
+	"aliases":["TS_HeizungsTherme"],
+	"parentRequirements": [],
+	"childRequirements": [],
+	"implemented": [],
+	"prefix": "TSHeizTherme"
+}

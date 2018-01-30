@@ -1,0 +1,8 @@
+
+#Parameter für 1wire und PWM setzen am Ende der config.txt
+# 1. 1wire Bus
+#dtoverlay w1-gpio,gpiopin=6 
+# 2. 1wire Bus
+dtoverlay w1-gpio,gpiopin=5
+# PWM Pin zur ansteuerung der Vailannt Schaltung
+dtoverlay=pwm,pin=12,func=2

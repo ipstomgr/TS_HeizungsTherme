@@ -1,0 +1,20 @@
+{
+  "elements":
+	[
+		{ "type": "SelectVariable", "name": "Aussentemperatur_ID", "caption": "Aussentemperatur" },
+		{ "type": "SelectVariable", "name": "Raumtemperatur_ID", "caption": "Raumtemperatur" },
+		{ "type": "SelectVariable", "name": "Kesseltemperatur_ID", "caption": "Kesseltemperatur" },
+		{ "type": "SelectVariable", "name": "Vorlauftemperatur_ID", "caption": "Vorlauftemperatur" },
+		{ "type": "SelectVariable", "name": "Rücklauftemperatur_ID", "caption": "Rücklauftemperatur" },
+
+		{ "type": "NumberSpinner", "name": "reglertimer_ID", "caption": "Regler Timer in Sek." },
+		{ "type": "NumberSpinner", "name": "graphtimer_ID", "caption": "Graph Timer in Sek." },
+		{ "type": "NumberSpinner", "name": "dallastimer_ID", "caption": "Dallas Timer in Sek." }
+	],
+  "actions":
+  [
+		{ "type": "Button", "label": "Create Dallas", "onClick": "TSHeizTherme_create_dallas($id);" },
+		{ "type": "Button", "label": "Update Graph", "onClick": "TSHeizTherme_Graph($id);" },
+		{ "type": "Button", "label": "Update Dallas", "onClick": "TSHeizTherme_UpdateValue($id);" }
+  ]
+}

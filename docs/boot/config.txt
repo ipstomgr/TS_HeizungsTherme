@@ -5,4 +5,5 @@
 # 2. 1wire Bus
 dtoverlay w1-gpio,gpiopin=5
 # PWM Pin zur ansteuerung der Vailannt Schaltung
-dtoverlay=pwm,pin=12,func=2
+#dtoverlay=pwm,pin=18,func=2 # GPIO18 ist belegt bei mir vom HM Modul
+dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4

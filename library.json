@@ -3,11 +3,7 @@
 	"author": "Thomas Schnittcher",
 	"name": "TS_HeizungsTherme",
 	"url": "",
-<<<<<<< HEAD
-	"version": "1.1",
-=======
 	"version": "1.0",
->>>>>>> b784c73570d38ddeef39cc291e74e9ce06f7e58e
 	"build": 0,
 	"date": 0
 }

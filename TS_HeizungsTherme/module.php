@@ -297,7 +297,7 @@ class TS_HeizungsTherme extends IPSModule {
         $id = $this->ReadPropertyFloat("Rücklauftemperatur_ID");
         if($id > 0) {
             $value = GetValue($id);
-            SetValue($this->GetIDForIdent("Rücklauftemperatur"), GetValue($id));
+            SetValue($this->GetIDForIdent("Ruecklauftemperatur"), GetValue($id));
         }
 	}
     public function UpdateRegler() {

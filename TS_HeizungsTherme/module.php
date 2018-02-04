@@ -21,6 +21,11 @@ class TS_HeizungsTherme extends IPSModule {
 		$this->RegisterTimer("Update_Regler", 10000, 'TSHeizTherme_UpdateRegler($_IPS["TARGET"]);');
 		$this->RegisterTimer("Update_Graph", 10000, 'TSHeizTherme_Graph($_IPS["TARGET"]);');
 	}
+	
+	public function Destroy(){
+		//Never delete this line!
+		parent::Destroy();
+	}
 
     public function ApplyChanges() {
 
@@ -40,6 +45,7 @@ class TS_HeizungsTherme extends IPSModule {
 		$this->RegisterProfileInteger("TS.Boostanhebung", "Graph", "", " K", 0, 15, 1);
 		
 		//     RegisterVariableFloat( string $Ident, string $Name, string $Profil, integer $Position )
+        $this->RegisterVariableFloat("Steuerspannung", "Steuerspannung", "~Volt",101);
         $this->RegisterVariableFloat("Aussentemperatur", "Aussentemperatur", "~Temperature",10);
         $this->RegisterVariableFloat("Raumtemperatur", "Raumtemperatur", "~Temperature.Room",11);
         $this->RegisterVariableFloat("Kesseltemperatur", "Kesseltemperatur", "~Temperature",12);
@@ -64,7 +70,6 @@ class TS_HeizungsTherme extends IPSModule {
 			$this->EnableAction("Steilheit");
 		$this->RegisterVariableInteger("Status", "Status", "TS.HeatingStatus",0);
 		$this->RegisterVariableFloat("KesselSolltemperatur", "Kessel Solltemperatur", "Temperature.Room",35);
-        $this->RegisterVariableFloat("Spannung", "Spannung", "~Volt",101);
  		$this->RegisterVariableString("onewireId", "onewireId","",200);
           $this->DisableAction("onewireId");
 		$this->RegisterVariableInteger("onewirezaehler", "onewirezaehler", "",210);
@@ -77,9 +82,12 @@ class TS_HeizungsTherme extends IPSModule {
 
 		$this->RegisterVariableBoolean("UhrHeizungKessel", "Uhr Heizung", "~Switch",-10);
           $this->EnableAction("UhrHeizungKessel");
+		
+//		
 		$this->CreateWochenplan("Uhr Heizung", 2,"UhrHeizungKessel");
 		 // CreateWochenplan($name, $Typ, $Var)
 		$this->CreateImageHeizkennline(); 
+// 
         $this->RegisterMessage($this->ReadPropertyFloat("Aussentemperatur_ID"), VM_UPDATE);
 		$this->RegisterMessage($this->ReadPropertyFloat("Raumtemperatur_ID"), VM_UPDATE);
 		$this->RegisterMessage($this->ReadPropertyFloat("Kesseltemperatur_ID"), VM_UPDATE);
@@ -128,7 +136,7 @@ class TS_HeizungsTherme extends IPSModule {
 		
 		$id=$this->CreateLinkByName(IPS_GetCategoryIDByName("Statusanzeigen",IPS_GetCategoryIDByName("TS_Heizung", 0)),"Aussentemperatur",($this->GetIDForIdent("Aussentemperatur")));	
 			IPS_SetPosition($id, 0);
-		$id=$this->CreateLinkByName(IPS_GetCategoryIDByName("Statusanzeigen",IPS_GetCategoryIDByName("TS_Heizung", 0)),"Spannung",($this->GetIDForIdent("Spannung")));	
+		$id=$this->CreateLinkByName(IPS_GetCategoryIDByName("Statusanzeigen",IPS_GetCategoryIDByName("TS_Heizung", 0)),"Steuerspannung",($this->GetIDForIdent("Steuerspannung")));	
 			IPS_SetPosition($id, 100);
 		$id=$this->CreateLinkByName(IPS_GetCategoryIDByName("Statusanzeigen",IPS_GetCategoryIDByName("TS_Heizung", 0)),"Kessel Solltemperatur",($this->GetIDForIdent("KesselSolltemperatur")));	
 			IPS_SetPosition($id, 90);
@@ -151,7 +159,7 @@ class TS_HeizungsTherme extends IPSModule {
 
 
 		IPS_SetParent(IPS_GetParent($this->GetIDForIdent("Aussentemperatur")),IPS_GetCategoryIDByName("TS_Heizung", 0)); //Verschiebe Modult nach TS_Heizung
-		
+	
     }
 
 	public function RequestAction($Ident, $Value) {
@@ -293,6 +301,7 @@ class TS_HeizungsTherme extends IPSModule {
         }
 	}
     public function UpdateRegler() {
+			$steuerspannung_id= $this->GetIDForIdent("Steuerspannung");
 			$Aussentemperatur = GetValueFloat($this->GetIDForIdent("Aussentemperatur"));
 			$SommerTemp = GetValueFloat($this->GetIDForIdent("Sommerumschaltung"));
 			$Steilheit = GetValueFloat($this->GetIDForIdent("Steilheit"));
@@ -315,16 +324,17 @@ class TS_HeizungsTherme extends IPSModule {
 			}
 			SetValueFloat($this->GetIDForIdent("aktuelleRaumSolltemperatur"), $Raumsollwert);
 			
-			$e = ($Raumsollwert - $Raumistwert)/$boostHysterese;
-			$boostwert_e= (round($boostanhebung*$e));
-			if ($e > $boostHysterese){
-					SetValueInteger($this->GetIDForIdent("boostTemperatur"),$boostanhebung); 
+            If ($boostHysterese > 0) {
+				$e = ($Raumsollwert - $Raumistwert)/$boostHysterese;
+				$boostwert_e= (round($boostanhebung*$e));
+				if ($e > $boostHysterese){
+						SetValueInteger($this->GetIDForIdent("boostTemperatur"),$boostanhebung); 
+					}
+					else
+					{
+						SetValueInteger($this->GetIDForIdent("boostTemperatur"),$boostwert_e); 
 				}
-				else
-				{
-					SetValueInteger($this->GetIDForIdent("boostTemperatur"),$boostwert_e); 
 			}
-			
 			$boostTemperatur =GetValueInteger($this->GetIDForIdent("boostTemperatur")); 
 			
 			If ($Aussentemperatur < $SommerTemp) {
@@ -336,8 +346,8 @@ class TS_HeizungsTherme extends IPSModule {
 //				If (GetValueFloat($this->GetIDForIdent("KesselSolltemperatur")) <> $KesselSolltemperatur) {
 					SetValueFloat($this->GetIDForIdent("KesselSolltemperatur"), $KesselSolltemperatur);
 //				}
-				$Spannung = ((($KesselSolltemperatur - 40) / 10) + 11.9);
-//				$Spannung = max($Spannung, $this->ReadPropertyFloat("MinSpannung"));
+				$spannung = ((($KesselSolltemperatur - 40) / 10) + 11.9);
+//				$spannung = max($spannung, $this->ReadPropertyFloat("MinSpannung"));
 			}
 			If ($Aussentemperatur >= $SommerTemp) {			     
 				If (GetValueInteger($this->GetIDForIdent("Status")) <> 2) {
@@ -346,20 +356,22 @@ class TS_HeizungsTherme extends IPSModule {
 				If (GetValueFloat($this->GetIDForIdent("KesselSolltemperatur")) <> 0) {
 					SetValueFloat($this->GetIDForIdent("KesselSolltemperatur"), 0);
 				}
-//				$Spannung = $this->ReadPropertyFloat("MinVolt");
+//				$spannung = $this->ReadPropertyFloat("Steuerspannung Min.");
+				$spannung = 0;
 			}
-			If (GetValueFloat($this->GetIDForIdent("Spannung")) <> $Spannung) {
-				SetValueFloat($this->GetIDForIdent("Spannung"), $Spannung);
+
+			If (GetValueFloat($this->GetIDForIdent("Steuerspannung")) <> $spannung) {
+				SetValueFloat($this->GetIDForIdent("Steuerspannung"), $spannung);
 			}
 			// Wert invertieren
 
-//			$Intensity = 255 - (intval($Spannung / (15 - 2) * 100 * 2.55));
-			$duty_cycle=((($Spannung-10)*61000)+657000); //657000 PWM = 10V,  61000 = +0,1V, Startwert ist 10V für die Berechnung
+//			$Intensity = 255 - (intval($spannung / (15 - 2) * 100 * 2.55));
+			$duty_cycle=((($spannung-10)*61000)+657000); //657000 PWM = 10V,  61000 = +0,1V, Startwert ist 10V für die Berechnung
 			$Intensity = $duty_cycle;
  			If (GetValue($this->GetIDForIdent("duty_cycle")) <> $duty_cycle) {
 				SetValue($this->GetIDForIdent("duty_cycle"), $duty_cycle);
       }
-			$this->SendDebug("Calculate", "Stellwert: ".$Intensity." Spannung: ".$Spannung."V", 0);
+			$this->SendDebug("Calculate", "Stellwert: ".$Intensity." Spannung: ".$spannung."V", 0);
 
 			$this->Set_PWM($Intensity);
 
@@ -628,7 +640,20 @@ class TS_HeizungsTherme extends IPSModule {
   	   }
 	}
 	}	
-
+	public function SetConfig() 
+	{
+	// Setzen von ersten Parametern beim anlegen.
+       // SetValue($this->GetIDForIdent("Kesselmin"), 20);
+		//SetValue($this->GetIDForIdent("Kesselmax"), 70);
+		
+		If (GetValueFloat($this->GetIDForIdent("Kesselmin")) == 0){SetValue($this->GetIDForIdent("Kesselmin"), 20);}
+        If (GetValueFloat($this->GetIDForIdent("Kesselmax")) == 0){SetValue($this->GetIDForIdent("Kesselmax"), 70);}
+        If (GetValueFloat($this->GetIDForIdent("Sommerumschaltung")) == 0){SetValue($this->GetIDForIdent("Sommerumschaltung"), 20);}
+        If (GetValueFloat($this->GetIDForIdent("RaumSolltemperaturNacht"))== 0){SetValue($this->GetIDForIdent("RaumSolltemperaturNacht"), 18.5);}
+        If (GetValueFloat($this->GetIDForIdent("RaumSolltemperatur"))== 0){SetValue($this->GetIDForIdent("RaumSolltemperatur"), 21.5);}
+        If (GetValueFloat($this->GetIDForIdent("Steilheit")) == 0){SetValue($this->GetIDForIdent("Steilheit"), 1);}
+        If (GetValueBoolean($this->GetIDForIdent("UhrHeizungKessel"))== 0){SetValue($this->GetIDForIdent("UhrHeizungKessel"), true);}
+	}
 	private function RegisterProfileInteger($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $StepSize)
 	{
 	        if (!IPS_VariableProfileExists($Name))

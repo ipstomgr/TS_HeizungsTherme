@@ -332,7 +332,14 @@ class TS_HeizungsTherme extends IPSModule {
 					}
 					else
 					{
-						SetValueInteger($this->GetIDForIdent("boostTemperatur"),$boostwert_e); 
+						
+						If ($boostwert_e <= ($boostanhebung*-1)) {
+							SetValueInteger($this->GetIDForIdent("boostTemperatur"),($boostanhebung*-1) ); 
+						}
+						else
+						{
+							SetValueInteger($this->GetIDForIdent("boostTemperatur"),$boostwert_e); 
+						}
 				}
 			}
 			$boostTemperatur =GetValueInteger($this->GetIDForIdent("boostTemperatur")); 

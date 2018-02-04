@@ -1,6 +1,6 @@
 NUR für Symcon auf Rasberry !!!!!
 
-IPS-Heizungsteuerung per Raspberry Pi2 oder 3 für Vailant Thermen über 
+IPS-Heizungsteuerung per Raspberry Pi2 oder 3 für Vaillant Thermen über 
 die Schnittstelle 7-8-9 per PWM.
 
 Dallas-Bus für DS18x20 wird direkt am GPIO betrieben.

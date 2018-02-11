@@ -38,8 +38,9 @@ class TS_HeizungsTherme extends IPSModule {
 		IPS_SetVariableProfileAssociation("TS.HeatingStatus", 1, "Winterbetrieb", "Information", -1);
 		IPS_SetVariableProfileAssociation("TS.HeatingStatus", 2, "Sommerbetrieb", "Information", -1);
 		IPS_SetVariableProfileAssociation("TS.HeatingStatus", 3, "gestört", "Information", -1);
-//     function RegisterProfileFloat($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $StepSize)
-		$this->RegisterProfileFloat("TS.Steilheit", "Graph", "", "",0.0,4.0,0.1);
+//     function RegisterProfileFloat($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $StepSize,$digits)
+		$this->RegisterProfileFloat("TS.Steilheit", "Graph", "", "",0,4,0.1,1);
+		
         $this->RegisterProfileInteger("TS.Parallelverschiebung", "Graph", "", " K", -20, 20, 1);
 		$this->RegisterProfileInteger("TS.Boosthysterese", "Graph", "", " K", 0, 10, 1);
 		$this->RegisterProfileInteger("TS.Boostanhebung", "Graph", "", " K", 0, 15, 1);
@@ -77,8 +78,11 @@ class TS_HeizungsTherme extends IPSModule {
 		$this->RegisterVariableInteger("boostTemperatur", "boost Temperatur", "TS.Boostanhebung",60);
 		$this->RegisterVariableInteger("boostHysterese", "boost Hysterese", "TS.Boosthysterese",61);
 			$this->EnableAction("boostHysterese");
-		$this->RegisterVariableInteger("boostAnhebung", "boost Anhebung", "TS.Boostanhebung",62);
-			$this->EnableAction("boostAnhebung");
+		$this->RegisterVariableInteger("ThermeHysterese", "Therme Hysterese", "TS.Boostanhebung",62);
+			$this->EnableAction("ThermeHysterese");
+
+			$this->RegisterVariableInteger("boostHysterese", "boost Hysterese", "TS.Boosthysterese",61);
+			$this->EnableAction("boostHysterese");
 
 		$this->RegisterVariableBoolean("UhrHeizungKessel", "Uhr Heizung", "~Switch",-10);
           $this->EnableAction("UhrHeizungKessel");
@@ -120,6 +124,9 @@ class TS_HeizungsTherme extends IPSModule {
 				IPS_SetPosition($id, 40);
 		$id=$this->CreateLinkByName(IPS_GetCategoryIDByName("Einstellungen",IPS_GetCategoryIDByName("TS_Heizung", 0)),"Steilheit",($this->GetIDForIdent("Steilheit")));	
 				IPS_SetPosition($id, 60);
+		$id=$this->CreateLinkByName(IPS_GetCategoryIDByName("Einstellungen",IPS_GetCategoryIDByName("TS_Heizung", 0)),"Therme Hysterese",($this->GetIDForIdent("ThermeHysterese")));	
+				IPS_SetPosition($id, 60);
+
 		$id=$this->CreateLinkByName(IPS_GetCategoryIDByName("Einstellungen",IPS_GetCategoryIDByName("TS_Heizung", 0)),"Parallelverschiebung",($this->GetIDForIdent("Parallelverschiebung")));	
 				IPS_SetPosition($id, 50);
 		$id=$this->CreateLinkByName(IPS_GetCategoryIDByName("Einstellungen",IPS_GetCategoryIDByName("TS_Heizung", 0)),"Kessel max",($this->GetIDForIdent("Kesselmax")));	
@@ -198,7 +205,11 @@ class TS_HeizungsTherme extends IPSModule {
 	        case "Parallelverschiebung":
 	            $this->Set_Parallelverschiebung($Value);
 	            break;
+	        case "ThermeHysterese":
+	            $this->Set_ThermeHysterese($Value);
+	            break;
 
+				
 				default:
 	            throw new Exception("Invalid Ident");
 		}
@@ -209,7 +220,11 @@ class TS_HeizungsTherme extends IPSModule {
 		SetValue($this->GetIDForIdent("Sommerumschaltung"), $value);
 	}
 	
-	public function Set_boostHysterese(Int $value)
+	public function Set_ThermeHysterese(int $value)
+	{
+		SetValue($this->GetIDForIdent("ThermeHysterese"), $value);
+	}
+    public function Set_boostHysterese(Int $value)
 	{
 		SetValue($this->GetIDForIdent("boostHysterese"), $value);
 	}
@@ -343,7 +358,7 @@ class TS_HeizungsTherme extends IPSModule {
 				}
 			}
 			$boostTemperatur =GetValueInteger($this->GetIDForIdent("boostTemperatur")); 
-			
+			$hysterese= GetValueInteger($this->GetIDForIdent("ThermeHysterese"));
 			If ($Aussentemperatur < $SommerTemp) {
 				// Winterbetrieb
 				If (GetValueInteger($this->GetIDForIdent("Status")) <> 1) {
@@ -353,7 +368,7 @@ class TS_HeizungsTherme extends IPSModule {
 //				If (GetValueFloat($this->GetIDForIdent("KesselSolltemperatur")) <> $KesselSolltemperatur) {
 					SetValueFloat($this->GetIDForIdent("KesselSolltemperatur"), $KesselSolltemperatur);
 //				}
-				$spannung = ((($KesselSolltemperatur - 40) / 10) + 11.9);
+				$spannung = ((( ($KesselSolltemperatur+$hysterese) - 40) / 10) + 11.9);
 //				$spannung = max($spannung, $this->ReadPropertyFloat("MinSpannung"));
 			}
 			If ($Aussentemperatur >= $SommerTemp) {			     
@@ -678,7 +693,7 @@ class TS_HeizungsTherme extends IPSModule {
 	        IPS_SetVariableProfileValues($Name, $MinValue, $MaxValue, $StepSize);        
 	}
 
-	private function RegisterProfileFloat($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $StepSize)
+	private function RegisterProfileFloat($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $StepSize, $digits)
 	{
 	        if (!IPS_VariableProfileExists($Name))
 	        {
@@ -692,7 +707,8 @@ class TS_HeizungsTherme extends IPSModule {
 	        }
 	        IPS_SetVariableProfileIcon($Name, $Icon);
 	        IPS_SetVariableProfileText($Name, $Prefix, $Suffix);
-	        IPS_SetVariableProfileValues($Name, $MinValue, $MaxValue, $StepSize);        
+	        IPS_SetVariableProfileValues($Name, $MinValue, $MaxValue, $StepSize);    
+			IPS_SetVariableProfileDigits($Name, $digits);			
 	}
 
  private function CreateVariableByName($id, $name, $type)

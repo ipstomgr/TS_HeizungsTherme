@@ -47,6 +47,7 @@ class TS_HeizungsTherme extends IPSModule {
 		
 		//     RegisterVariableFloat( string $Ident, string $Name, string $Profil, integer $Position )
         $this->RegisterVariableFloat("Steuerspannung", "Steuerspannung", "~Volt",101);
+		$this->RegisterVariableFloat("Kesselabschaltemperatur", "Kesselabschaltemperatur", "~Temperature",10);
         $this->RegisterVariableFloat("Aussentemperatur", "Aussentemperatur", "~Temperature",10);
         $this->RegisterVariableFloat("Raumtemperatur", "Raumtemperatur", "~Temperature.Room",11);
         $this->RegisterVariableFloat("Kesseltemperatur", "Kesseltemperatur", "~Temperature",12);
@@ -343,6 +344,7 @@ class TS_HeizungsTherme extends IPSModule {
 			//$Parallelverschiebung = $Parallelverschiebung + ($TempDiff - $Parallelverschiebung);
 			//$Raumsollwert = GetValueFloat($this->GetIDForIdent("RaumSolltemperatur"));
 $spannung = GetValueFloat($this->GetIDForIdent("Steuerspannung"));;
+
 			if ($Uhr == 1)  {
 				$Raumsollwert= GetValueFloat($this->GetIDForIdent("RaumSolltemperatur"));
 				} else{
@@ -410,6 +412,7 @@ $spannung = GetValueFloat($this->GetIDForIdent("Steuerspannung"));;
 				*/
 				If (($Raumistwert) < ($Raumsollwert + 0.1)) {			
 					$spannung = ((( ($KesselSolltemperatur+$hysterese) - 41) / 10) + 12.5);
+					$kessel_abschaltwert = ($KesselSolltemperatur+$hysterese);
 //					SetValueFloat($this->GetIDForIdent("Steuerspannung"), $spannung);
 				}
 
@@ -421,6 +424,7 @@ $spannung = GetValueFloat($this->GetIDForIdent("Steuerspannung"));;
 					
 						//spannung = 14.1;
 						$spannung = ((( ($MaxTemp) - 41) / 10) + 12.5);
+						$kessel_abschaltwert = ($MaxTemp);
 //						SetValueFloat($this->GetIDForIdent("Steuerspannung"), $spannung);
 					}
 
@@ -431,6 +435,7 @@ $spannung = GetValueFloat($this->GetIDForIdent("Steuerspannung"));;
             If (($Raumistwert) > ($Raumsollwert + 0.2)) {			
 				//$spannung = ((( ($KesselSolltemperatur+($hysterese/2)) - 41) / 10) + 12.5);
 				$spannung = ((( ($KesselSolltemperatur) - 41) / 10) + 12.5);
+				$kessel_abschaltwert = ($KesselSolltemperatur);
 //				SetValueFloat($this->GetIDForIdent("Steuerspannung"), $spannung);
 			}
 			// Ende Wärmebedarf, nach Raumtemperatur
@@ -445,6 +450,7 @@ $spannung = GetValueFloat($this->GetIDForIdent("Steuerspannung"));;
 //				$spannung = $this->ReadPropertyFloat("Steuerspannung Min.");
 //				$spannung = 10.5;
 				$spannung = ((( ($MinTemp) - 41) / 10) + 12.5);
+				$kessel_abschaltwert = ($MinTemp);
 //				SetValueFloat($this->GetIDForIdent("Steuerspannung"), $spannung);
 
 			}
@@ -454,7 +460,7 @@ $spannung = GetValueFloat($this->GetIDForIdent("Steuerspannung"));;
 			If (GetValueFloat($this->GetIDForIdent("Steuerspannung")) <> $spannung) {
 				SetValueFloat($this->GetIDForIdent("Steuerspannung"), $spannung);
 			}
-
+SetValueFloat($this->GetIDForIdent("Kesselabschaltemperatur"), $kessel_abschaltwert);
 			// Wert invertieren
 //			$Intensity = 255 - (intval($spannung / (15 - 2) * 100 * 2.55));
 			$duty_cycle=((($spannung-10)*61000)+657000); //657000 PWM = 10V,  61000 = +0,1V, Startwert ist 10V für die Berechnung

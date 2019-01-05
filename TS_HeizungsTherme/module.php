@@ -56,8 +56,10 @@ class TS_HeizungsTherme extends IPSModule {
 			$this->EnableAction("RaumSolltemperatur");
 		$this->RegisterVariableFloat("RaumSolltemperaturNacht", "Raum Solltemperatur Nacht", "~Temperature.Room",31);
 			$this->EnableAction("RaumSolltemperaturNacht");
-		$this->RegisterVariableFloat("aktuelleRaumSolltemperatur", "Raum Solltemperatur aktuell", "~Temperature.Room",11);
-
+		$this->RegisterVariableFloat("aktuelleRaumSolltemperatur", "Raum Solltemp.aktuell", "~Temperature.Room",11);
+		
+		$this->RegisterVariableFloat("AussentemparaturMin", "Ausentemp.min", "~Temperature",10);
+		
 		$this->RegisterVariableFloat("Sommerumschaltung", "Sommerumschaltung", "~Temperature.Room",29);
 			$this->EnableAction("Sommerumschaltung");
 		$this->RegisterVariableFloat("Kesselmin", "Kessel min. Temperature", "~Temperature",41);
@@ -83,6 +85,8 @@ class TS_HeizungsTherme extends IPSModule {
 
 			$this->RegisterVariableInteger("boostHysterese", "boost Hysterese", "TS.Boosthysterese",61);
 			$this->EnableAction("boostHysterese");
+
+		$this->RegisterVariableBoolean("Waermebedarf", "Wärmebedarf", "~Switch",100);
 
 		$this->RegisterVariableBoolean("UhrHeizungKessel", "Uhr Heizung", "~Switch",-10);
           $this->EnableAction("UhrHeizungKessel");
@@ -143,6 +147,8 @@ class TS_HeizungsTherme extends IPSModule {
 		
 		$id=$this->CreateLinkByName(IPS_GetCategoryIDByName("Statusanzeigen",IPS_GetCategoryIDByName("TS_Heizung", 0)),"Aussentemperatur",($this->GetIDForIdent("Aussentemperatur")));	
 			IPS_SetPosition($id, 0);
+		$id=$this->CreateLinkByName(IPS_GetCategoryIDByName("Statusanzeigen",IPS_GetCategoryIDByName("TS_Heizung", 0)),"Aussentemp.min",($this->GetIDForIdent("AussentemparaturMin")));	
+			IPS_SetPosition($id, 1);
 		$id=$this->CreateLinkByName(IPS_GetCategoryIDByName("Statusanzeigen",IPS_GetCategoryIDByName("TS_Heizung", 0)),"Steuerspannung",($this->GetIDForIdent("Steuerspannung")));	
 			IPS_SetPosition($id, 100);
 		$id=$this->CreateLinkByName(IPS_GetCategoryIDByName("Statusanzeigen",IPS_GetCategoryIDByName("TS_Heizung", 0)),"Kessel Solltemperatur",($this->GetIDForIdent("KesselSolltemperatur")));	
@@ -161,7 +167,7 @@ class TS_HeizungsTherme extends IPSModule {
 			IPS_SetPosition($id, 10);		
 		$id=$this->CreateLinkByName(IPS_GetCategoryIDByName("Statusanzeigen",IPS_GetCategoryIDByName("TS_Heizung", 0)),"boost Temperatur",($this->GetIDForIdent("boostTemperatur")));	
 			IPS_SetPosition($id, 20);
-		$id=$this->CreateLinkByName(IPS_GetCategoryIDByName("Statusanzeigen",IPS_GetCategoryIDByName("TS_Heizung", 0)),"Raum Solltemperatur aktuell",($this->GetIDForIdent("aktuelleRaumSolltemperatur")));	
+		$id=$this->CreateLinkByName(IPS_GetCategoryIDByName("Statusanzeigen",IPS_GetCategoryIDByName("TS_Heizung", 0)),"Raum Solltemp.aktuell",($this->GetIDForIdent("aktuelleRaumSolltemperatur")));	
 			IPS_SetPosition($id, 12);
 
 
@@ -215,7 +221,7 @@ class TS_HeizungsTherme extends IPSModule {
 		}
 	}
 //30.01.2018 15:48:16 | PHPLibrary | Parameter value in function TSHeizTherme_Set_Sommerumschaltung has no type hint. Please use either 'bool', 'int', 'float' or 'string'.
-	public function Set_Sommerumschaltung(Int $value)
+	public function Set_Sommerumschaltung(float $value)
 	{
 		SetValue($this->GetIDForIdent("Sommerumschaltung"), $value);
 	}
@@ -317,7 +323,10 @@ class TS_HeizungsTherme extends IPSModule {
 	}
     public function UpdateRegler() {
 			$steuerspannung_id= $this->GetIDForIdent("Steuerspannung");
-			$Aussentemperatur = GetValueFloat($this->GetIDForIdent("Aussentemperatur"));
+//			$Aussentemperatur = GetValueFloat($this->GetIDForIdent("Aussentemperatur"));
+//          $this->RegisterVariableFloat("AussentemparaturMin", "Ausentemp.min", "~Temperature",10);
+			$Aussentemperatur = GetValueFloat($this->GetIDForIdent("AussentemparaturMin"));
+//
 			$SommerTemp = GetValueFloat($this->GetIDForIdent("Sommerumschaltung"));
 			$Steilheit = GetValueFloat($this->GetIDForIdent("Steilheit"));
 			$MinTemp = GetValueFloat($this->GetIDForIdent("Kesselmin"));
@@ -329,9 +338,11 @@ class TS_HeizungsTherme extends IPSModule {
 			$Uhr= GetValueBoolean($this->GetIDForIdent("UhrHeizungKessel"));
 			$boostanhebung =GetValueInteger($this->GetIDForIdent("boostAnhebung")); 
 			$boostHysterese =GetValueInteger($this->GetIDForIdent("boostHysterese")); 
+			$wärmebedarf=GetValueBoolean($this->GetIDForIdent("Waermebedarf"));
 			//TempDiff = $Vorlauftemperatur - $Rücklauftemperatur;
 			//$Parallelverschiebung = $Parallelverschiebung + ($TempDiff - $Parallelverschiebung);
 			//$Raumsollwert = GetValueFloat($this->GetIDForIdent("RaumSolltemperatur"));
+$spannung = GetValueFloat($this->GetIDForIdent("Steuerspannung"));;
 			if ($Uhr == 1)  {
 				$Raumsollwert= GetValueFloat($this->GetIDForIdent("RaumSolltemperatur"));
 				} else{
@@ -347,16 +358,28 @@ class TS_HeizungsTherme extends IPSModule {
 					}
 					else
 					{
-						
+// Test Absenkung						
+/*
 						If ($boostwert_e <= ($boostanhebung*-1)) {
-							SetValueInteger($this->GetIDForIdent("boostTemperatur"),($boostanhebung*-1) ); 
+							//SetValueInteger($this->GetIDForIdent("boostTemperatur"),($boostanhebung*-1) ); 
 						}
 						else
 						{
-							SetValueInteger($this->GetIDForIdent("boostTemperatur"),$boostwert_e); 
+*/							$boost=$boostwert_e; 
+							If ($boost < 0) {			
+								$boost=0; 
+							}
+							SetValueInteger($this->GetIDForIdent("boostTemperatur"),$boost);
 						}
-				}
+// Test Absenkung
+					}
+//			}
+/*			
+			$boostTemperatur =GetValueInteger($this->GetIDForIdent("boostTemperatur")); 
+            If ($boostTemperatur < 0) {			
+				SetValueInteger($this->GetIDForIdent("boostTemperatur"),(0) ); 
 			}
+*/			
 			$boostTemperatur =GetValueInteger($this->GetIDForIdent("boostTemperatur")); 
 			$hysterese= GetValueInteger($this->GetIDForIdent("ThermeHysterese"));
 			If ($Aussentemperatur < $SommerTemp) {
@@ -368,25 +391,71 @@ class TS_HeizungsTherme extends IPSModule {
 //				If (GetValueFloat($this->GetIDForIdent("KesselSolltemperatur")) <> $KesselSolltemperatur) {
 					SetValueFloat($this->GetIDForIdent("KesselSolltemperatur"), $KesselSolltemperatur);
 //				}
-				$spannung = ((( ($KesselSolltemperatur+$hysterese) - 40) / 10) + 11.9);
+				//$spannung = ((( ($KesselSolltemperatur+$hysterese) - 40) / 10) + 11.9);
+				/* 
+				9,9=15
+				10,4=20
+				10,9=25
+				
+				11,56 = 30
+				12,06 = 35
+				12,49 = 40
+				12,84 = 45
+				13,34 = 50
+				13,85 = 55
+				14,28 = 60
+				14,78 = 65
+				15,28 = 70
+				15,71 = 75
+				*/
+				If (($Raumistwert) < ($Raumsollwert + 0.1)) {			
+					$spannung = ((( ($KesselSolltemperatur+$hysterese) - 41) / 10) + 12.5);
+//					SetValueFloat($this->GetIDForIdent("Steuerspannung"), $spannung);
+				}
+
+//				$spannung = ((( ($KesselSolltemperatur+$hysterese) - 41) / 10) + 12.5);
 //				$spannung = max($spannung, $this->ReadPropertyFloat("MinSpannung"));
+
+				if($Raumistwert < ($Raumsollwert -0.5)) {
+					If ($Rücklauftemperatur < ($KesselSolltemperatur+1 /*+$Parallelverschiebung*/)) {
+					
+						//spannung = 14.1;
+						$spannung = ((( ($MaxTemp) - 41) / 10) + 12.5);
+//						SetValueFloat($this->GetIDForIdent("Steuerspannung"), $spannung);
+					}
+
+				}	
+
 			}
+			//kein Wärmebedarf, nach Raumtemperatur
+            If (($Raumistwert) > ($Raumsollwert + 0.2)) {			
+				//$spannung = ((( ($KesselSolltemperatur+($hysterese/2)) - 41) / 10) + 12.5);
+				$spannung = ((( ($KesselSolltemperatur) - 41) / 10) + 12.5);
+//				SetValueFloat($this->GetIDForIdent("Steuerspannung"), $spannung);
+			}
+			// Ende Wärmebedarf, nach Raumtemperatur
+			
 			If ($Aussentemperatur >= $SommerTemp) {			     
 				If (GetValueInteger($this->GetIDForIdent("Status")) <> 2) {
 					SetValueInteger($this->GetIDForIdent("Status"), 2);
 				}
-				If (GetValueFloat($this->GetIDForIdent("KesselSolltemperatur")) <> 0) {
-					SetValueFloat($this->GetIDForIdent("KesselSolltemperatur"), 0);
+				If (GetValueFloat($this->GetIDForIdent("KesselSolltemperatur")) <> $MinTemp) {
+					SetValueFloat($this->GetIDForIdent("KesselSolltemperatur"), $MinTemp);
 				}
 //				$spannung = $this->ReadPropertyFloat("Steuerspannung Min.");
-				$spannung = 0;
+//				$spannung = 10.5;
+				$spannung = ((( ($MinTemp) - 41) / 10) + 12.5);
+//				SetValueFloat($this->GetIDForIdent("Steuerspannung"), $spannung);
+
 			}
+
+
 
 			If (GetValueFloat($this->GetIDForIdent("Steuerspannung")) <> $spannung) {
 				SetValueFloat($this->GetIDForIdent("Steuerspannung"), $spannung);
 			}
-			// Wert invertieren
 
+			// Wert invertieren
 //			$Intensity = 255 - (intval($spannung / (15 - 2) * 100 * 2.55));
 			$duty_cycle=((($spannung-10)*61000)+657000); //657000 PWM = 10V,  61000 = +0,1V, Startwert ist 10V für die Berechnung
 			$Intensity = $duty_cycle;
@@ -394,7 +463,15 @@ class TS_HeizungsTherme extends IPSModule {
 				SetValue($this->GetIDForIdent("duty_cycle"), $duty_cycle);
       }
 			$this->SendDebug("Calculate", "Stellwert: ".$Intensity." Spannung: ".$spannung."V", 0);
-
+			$wärmebedarf=GetValueBoolean($this->GetIDForIdent("Waermebedarf"));
+			If (GetValueFloat($this->GetIDForIdent("Steuerspannung")) < 10.3) {
+				
+				SetValueBoolean($this->GetIDForIdent("Waermebedarf"), 0);
+			}
+			else {
+				SetValueBoolean($this->GetIDForIdent("Waermebedarf"), 1);
+			}
+			
 			$this->Set_PWM($Intensity);
 
 		
@@ -597,7 +674,7 @@ class TS_HeizungsTherme extends IPSModule {
     		if($crc =="YES" and $temp[1] !== "-62" and $temp[1]  !== "85000") //Fehler raus, -1.2 Â°C ,85Â°C und CRC
     		{ 
     			$temp = $temp[1] / 1000;
-    			$temp = round($temp,2);
+    			$temp = round($temp,1);
   
         	$id = $this->CreateVariableByName(IPS_GetParent($this->GetIDForIdent("onewireId")), $ds_id[$i], 2);
           SetValue($id,$temp);
@@ -650,11 +727,11 @@ class TS_HeizungsTherme extends IPSModule {
   		if($crc =="YES" and $temp[1] !== "-62" and $temp[1]  !== "85000") //Fehler raus, -1.2 Â°C ,85°C und CRC
   		{ 
   			$temp = $temp[1] / 1000;
-  			$temp = round($temp,2);
-//    		$this->RegisterVariableFloat($ds_id[$i], $ds_id[$i],"",1);
-//        $VarID = IPS_CreateVariable(2);
-//        IPS_SetName($VarID, $ds_id[$i]); // Variable benennen
+  			$temp = round($temp,1);
 
+//      $dallas_id = str_replace('-','A',$ds_id[$i]);
+//		var_dump($dallas_id);
+//		$id = $this->RegisterVariableFloat($dallas_id , $dallas_id , "~Temperature",2);
       	$id = $this->CreateVariableByName(IPS_GetParent($this->GetIDForIdent("onewireId")), $ds_id[$i], 2);
 //		  var_dump($id);
 //        var_dump(IPS_GetParent($this->GetIDForIdent("onewireId")));

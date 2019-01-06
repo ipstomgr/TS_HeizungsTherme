@@ -365,8 +365,9 @@ class TS_HeizungsTherme extends IPSModule {
 				
 				$KesselSolltemperatur = min(max(round((0.55 * $Steilheit * (pow($Raumsollwert,($Aussentemperatur / (320 - $Aussentemperatur * 4))))*((-$Aussentemperatur + 20) * 2) + $Raumsollwert + $Parallelverschiebung+$boostTemperatur) * 1) / 1, $MinTemp), $MaxTemp);
 				SetValueFloat($this->GetIDForIdent("KesselSolltemperatur"), $KesselSolltemperatur);
-				$kessel_abschaltwert = ($KesselSolltemperatur);
-				$spannung = ((( ($KesselSolltemperatur) - 40) / 10) + 11.9);
+				$halbe_hysterese = $hysterese;
+				$kessel_abschaltwert = ($KesselSolltemperatur+$halbe_hysterese);
+				$spannung = ((( ($KesselSolltemperatur+$halbe_hysterese) - 40) / 10) + 12.5);
 				//$spannung = ((( ($KesselSolltemperatur+$hysterese) - 40) / 10) + 11.9);
 				/* 
 				9,9=15
@@ -383,9 +384,17 @@ class TS_HeizungsTherme extends IPSModule {
 				15,28 = 70
 				15,71 = 75
 				*/
+
+				If (($Raumistwert) > ($Raumsollwert + 0.1)) {			
+					$halbe_hysterese = $hysterese/2;
+					$kessel_abschaltwert = ($KesselSolltemperatur+$halbe_hysterese);
+					$spannung = ((( ($KesselSolltemperatur+$halbe_hysterese) - 40) / 10) + 12.5);
+
+/*
 				If (($Raumistwert) < ($Raumsollwert + 0.1)) {			
 					$spannung = ((( ($KesselSolltemperatur+$hysterese) - 41) / 10) + 12.5);
 					$kessel_abschaltwert = ($KesselSolltemperatur+$hysterese);
+*/
 				}
 				if($Raumistwert < ($Raumsollwert -0.5)) {
 					If ($Rücklauftemperatur < ($KesselSolltemperatur+1 /*+$Parallelverschiebung*/)) {
@@ -396,7 +405,7 @@ class TS_HeizungsTherme extends IPSModule {
 			}
 
 			//kein Wärmebedarf, nach Raumtemperatur
-            If (($Raumistwert) > ($Raumsollwert + 0.2)) {			
+            If (($Raumistwert) > ($Raumsollwert + 0.3)) {			
 				$spannung = ((( ($KesselSolltemperatur) - 41) / 10) + 12.5);
 				$kessel_abschaltwert = ($KesselSolltemperatur);
 			}
@@ -421,6 +430,8 @@ class TS_HeizungsTherme extends IPSModule {
 			// Wert invertieren
 //			$Intensity = 255 - (intval($spannung / (15 - 2) * 100 * 2.55));
 			$duty_cycle=((($spannung-10)*61000)+657000); //657000 PWM = 10V,  61000 = +0,1V, Startwert ist 10V für die Berechnung
+			//864400 =50 - ist aber 55
+			//
 			$Intensity = $duty_cycle;
  			If (GetValue($this->GetIDForIdent("duty_cycle")) <> $duty_cycle) {
 				SetValue($this->GetIDForIdent("duty_cycle"), $duty_cycle);

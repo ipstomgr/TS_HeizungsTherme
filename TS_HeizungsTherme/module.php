@@ -84,8 +84,8 @@ class TS_HeizungsTherme extends IPSModule {
 		$this->RegisterVariableInteger("ThermeHysterese", "Therme Hysterese", "TS.Boostanhebung",62);
 			$this->EnableAction("ThermeHysterese");
 
-		$this->RegisterVariableInteger("boostHysterese", "boost Hysterese", "TS.Boosthysterese",61);
-			$this->EnableAction("boostHysterese");
+		$this->RegisterVariableInteger("boostAnhebung", "boost Anhebung", "TS.Boosthysterese",61);
+			$this->EnableAction("boostAnhebung");
 
 		$this->RegisterVariableBoolean("Waermebedarf", "Wärmebedarf", "~Switch",100);
 
@@ -686,11 +686,11 @@ class TS_HeizungsTherme extends IPSModule {
 	{
 	// Setzen von ersten Parametern beim anlegen.
 		If (GetValueFloat($this->GetIDForIdent("Kesselmin")) == 0){SetValue($this->GetIDForIdent("Kesselmin"), 20);}
-        If (GetValueFloat($this->GetIDForIdent("Kesselmax")) == 0){SetValue($this->GetIDForIdent("Kesselmax"), 60);}
+        If (GetValueFloat($this->GetIDForIdent("Kesselmax")) == 0){SetValue($this->GetIDForIdent("Kesselmax"), 70);}
         If (GetValueFloat($this->GetIDForIdent("Sommerumschaltung")) == 0){SetValue($this->GetIDForIdent("Sommerumschaltung"), 20);}
         If (GetValueFloat($this->GetIDForIdent("RaumSolltemperaturNacht"))== 0){SetValue($this->GetIDForIdent("RaumSolltemperaturNacht"), 18.5);}
-        If (GetValueFloat($this->GetIDForIdent("RaumSolltemperatur"))== 0){SetValue($this->GetIDForIdent("RaumSolltemperatur"), 21);}
-        If (GetValueFloat($this->GetIDForIdent("Steilheit")) == 0){SetValue($this->GetIDForIdent("Steilheit"), 1.1);}
+        If (GetValueFloat($this->GetIDForIdent("RaumSolltemperatur"))== 0){SetValue($this->GetIDForIdent("RaumSolltemperatur"), 21.5);}
+        If (GetValueFloat($this->GetIDForIdent("Steilheit")) == 0){SetValue($this->GetIDForIdent("Steilheit"), 1);}
         If (GetValueBoolean($this->GetIDForIdent("UhrHeizungKessel"))== 0){SetValue($this->GetIDForIdent("UhrHeizungKessel"), true);}
 	}
 

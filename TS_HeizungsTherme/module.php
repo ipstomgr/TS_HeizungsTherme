@@ -84,7 +84,7 @@ class TS_HeizungsTherme extends IPSModule {
 		$this->RegisterVariableInteger("ThermeHysterese", "Therme Hysterese", "TS.Boostanhebung",62);
 			$this->EnableAction("ThermeHysterese");
 
-			$this->RegisterVariableInteger("boostHysterese", "boost Hysterese", "TS.Boosthysterese",61);
+		$this->RegisterVariableInteger("boostHysterese", "boost Hysterese", "TS.Boosthysterese",61);
 			$this->EnableAction("boostHysterese");
 
 		$this->RegisterVariableBoolean("Waermebedarf", "Wärmebedarf", "~Switch",100);
@@ -108,9 +108,6 @@ class TS_HeizungsTherme extends IPSModule {
 
 
         // private function CreateCategoryByName($id, $name)
-//		$this->CreateCategoryByName(IPS_GetParent($this->GetIDForIdent("onewireId")),"Statusanzeigen");	
-//		$this->CreateCategoryByName(IPS_GetParent($this->GetIDForIdent("onewireId")),"Einstellungen");
-//		$this->CreateCategoryByName(IPS_GetParent($this->GetIDForIdent("onewireId")),"Graph");
 
 		$this->CreateCategoryByName(IPS_GetCategoryIDByName("TS_Heizung", 0),"Statusanzeigen");	
 		$this->CreateCategoryByName(IPS_GetCategoryIDByName("TS_Heizung", 0),"Einstellungen");
@@ -142,7 +139,7 @@ class TS_HeizungsTherme extends IPSModule {
 			IPS_SetPosition($id, -90);
 		$id=$this->CreateLinkByName(IPS_GetCategoryIDByName("Einstellungen",IPS_GetCategoryIDByName("TS_Heizung", 0)),"Raum Solltemperatur Nacht",($this->GetIDForIdent("RaumSolltemperaturNacht")));	
 			IPS_SetPosition($id, 20);
-//@IPS_GetObjectIDByName("Regenerfassung", $ParentID);
+
 		$id= $this->CreateLinkByName(IPS_GetCategoryIDByName("Einstellungen",IPS_GetCategoryIDByName("TS_Heizung", 0)),"Uhr Heizung",IPS_GetObjectIDByName("Uhr Heizung",($this->GetIDForIdent("UhrHeizungKessel"))));	
 			IPS_SetPosition($id, -100);
 		
@@ -221,7 +218,7 @@ class TS_HeizungsTherme extends IPSModule {
 	            throw new Exception("Invalid Ident");
 		}
 	}
-//30.01.2018 15:48:16 | PHPLibrary | Parameter value in function TSHeizTherme_Set_Sommerumschaltung has no type hint. Please use either 'bool', 'int', 'float' or 'string'.
+
 	public function Set_Sommerumschaltung(float $value)
 	{
 		SetValue($this->GetIDForIdent("Sommerumschaltung"), $value);
@@ -285,15 +282,6 @@ class TS_HeizungsTherme extends IPSModule {
         $this->SendDebug("MessageSink", "Message from SenderID ".$SenderID." with Message ".$Message."\r\n Data: ".print_r($Data, true), 0);
         $this->UpdateValue();
     }
-
-    /**
-     * Die folgenden Funktionen stehen automatisch zur Verfügung, wenn das Modul über die "Module Control" eingefügt wurden.
-     * Die Funktionen werden, mit dem selbst eingerichteten Prefix, in PHP und JSON-RPC wiefolgt zur Verfügung gestellt:
-     *
-     * ABC_MeineErsteEigeneFunktion($id);
-     *
-     */
-    
 	
     public function UpdateValue() {
         $id = $this->ReadPropertyFloat("Aussentemperatur_ID");
@@ -327,7 +315,6 @@ class TS_HeizungsTherme extends IPSModule {
 //			$Aussentemperatur = GetValueFloat($this->GetIDForIdent("Aussentemperatur"));
 //          $this->RegisterVariableFloat("AussentemparaturMin", "Ausentemp.min", "~Temperature",10);
 			$Aussentemperatur = GetValueFloat($this->GetIDForIdent("AussentemparaturMin"));
-//
 			$SommerTemp = GetValueFloat($this->GetIDForIdent("Sommerumschaltung"));
 			$Steilheit = GetValueFloat($this->GetIDForIdent("Steilheit"));
 			$MinTemp = GetValueFloat($this->GetIDForIdent("Kesselmin"));
@@ -343,7 +330,7 @@ class TS_HeizungsTherme extends IPSModule {
 			//TempDiff = $Vorlauftemperatur - $Rücklauftemperatur;
 			//$Parallelverschiebung = $Parallelverschiebung + ($TempDiff - $Parallelverschiebung);
 			//$Raumsollwert = GetValueFloat($this->GetIDForIdent("RaumSolltemperatur"));
-$spannung = GetValueFloat($this->GetIDForIdent("Steuerspannung"));;
+			$spannung = GetValueFloat($this->GetIDForIdent("Steuerspannung"));;
 
 			if ($Uhr == 1)  {
 				$Raumsollwert= GetValueFloat($this->GetIDForIdent("RaumSolltemperatur"));
@@ -360,28 +347,14 @@ $spannung = GetValueFloat($this->GetIDForIdent("Steuerspannung"));;
 					}
 					else
 					{
-// Test Absenkung						
-/*
-						If ($boostwert_e <= ($boostanhebung*-1)) {
-							//SetValueInteger($this->GetIDForIdent("boostTemperatur"),($boostanhebung*-1) ); 
+						$boost=$boostwert_e; 
+						If ($boost < 0) {			
+							$boost=0; 
 						}
-						else
-						{
-*/							$boost=$boostwert_e; 
-							If ($boost < 0) {			
-								$boost=0; 
-							}
-							SetValueInteger($this->GetIDForIdent("boostTemperatur"),$boost);
-						}
-// Test Absenkung
+						SetValueInteger($this->GetIDForIdent("boostTemperatur"),$boost);
 					}
-//			}
-/*			
-			$boostTemperatur =GetValueInteger($this->GetIDForIdent("boostTemperatur")); 
-            If ($boostTemperatur < 0) {			
-				SetValueInteger($this->GetIDForIdent("boostTemperatur"),(0) ); 
-			}
-*/			
+				}
+
 			$boostTemperatur =GetValueInteger($this->GetIDForIdent("boostTemperatur")); 
 			$hysterese= GetValueInteger($this->GetIDForIdent("ThermeHysterese"));
 			If ($Aussentemperatur < $SommerTemp) {
@@ -389,16 +362,16 @@ $spannung = GetValueFloat($this->GetIDForIdent("Steuerspannung"));;
 				If (GetValueInteger($this->GetIDForIdent("Status")) <> 1) {
 					SetValueInteger($this->GetIDForIdent("Status"), 1);
 				}
+				
 				$KesselSolltemperatur = min(max(round((0.55 * $Steilheit * (pow($Raumsollwert,($Aussentemperatur / (320 - $Aussentemperatur * 4))))*((-$Aussentemperatur + 20) * 2) + $Raumsollwert + $Parallelverschiebung+$boostTemperatur) * 1) / 1, $MinTemp), $MaxTemp);
-//				If (GetValueFloat($this->GetIDForIdent("KesselSolltemperatur")) <> $KesselSolltemperatur) {
-					SetValueFloat($this->GetIDForIdent("KesselSolltemperatur"), $KesselSolltemperatur);
-//				}
+				SetValueFloat($this->GetIDForIdent("KesselSolltemperatur"), $KesselSolltemperatur);
+				$kessel_abschaltwert = ($KesselSolltemperatur);
+				$spannung = ((( ($KesselSolltemperatur) - 40) / 10) + 11.9);
 				//$spannung = ((( ($KesselSolltemperatur+$hysterese) - 40) / 10) + 11.9);
 				/* 
 				9,9=15
 				10,4=20
 				10,9=25
-				
 				11,56 = 30
 				12,06 = 35
 				12,49 = 40
@@ -413,30 +386,19 @@ $spannung = GetValueFloat($this->GetIDForIdent("Steuerspannung"));;
 				If (($Raumistwert) < ($Raumsollwert + 0.1)) {			
 					$spannung = ((( ($KesselSolltemperatur+$hysterese) - 41) / 10) + 12.5);
 					$kessel_abschaltwert = ($KesselSolltemperatur+$hysterese);
-//					SetValueFloat($this->GetIDForIdent("Steuerspannung"), $spannung);
 				}
-
-//				$spannung = ((( ($KesselSolltemperatur+$hysterese) - 41) / 10) + 12.5);
-//				$spannung = max($spannung, $this->ReadPropertyFloat("MinSpannung"));
-
 				if($Raumistwert < ($Raumsollwert -0.5)) {
 					If ($Rücklauftemperatur < ($KesselSolltemperatur+1 /*+$Parallelverschiebung*/)) {
-					
-						//spannung = 14.1;
 						$spannung = ((( ($MaxTemp) - 41) / 10) + 12.5);
 						$kessel_abschaltwert = ($MaxTemp);
-//						SetValueFloat($this->GetIDForIdent("Steuerspannung"), $spannung);
 					}
-
 				}	
-
 			}
+
 			//kein Wärmebedarf, nach Raumtemperatur
             If (($Raumistwert) > ($Raumsollwert + 0.2)) {			
-				//$spannung = ((( ($KesselSolltemperatur+($hysterese/2)) - 41) / 10) + 12.5);
 				$spannung = ((( ($KesselSolltemperatur) - 41) / 10) + 12.5);
 				$kessel_abschaltwert = ($KesselSolltemperatur);
-//				SetValueFloat($this->GetIDForIdent("Steuerspannung"), $spannung);
 			}
 			// Ende Wärmebedarf, nach Raumtemperatur
 			
@@ -447,41 +409,36 @@ $spannung = GetValueFloat($this->GetIDForIdent("Steuerspannung"));;
 				If (GetValueFloat($this->GetIDForIdent("KesselSolltemperatur")) <> $MinTemp) {
 					SetValueFloat($this->GetIDForIdent("KesselSolltemperatur"), $MinTemp);
 				}
-//				$spannung = $this->ReadPropertyFloat("Steuerspannung Min.");
-//				$spannung = 10.5;
 				$spannung = ((( ($MinTemp) - 41) / 10) + 12.5);
 				$kessel_abschaltwert = ($MinTemp);
-//				SetValueFloat($this->GetIDForIdent("Steuerspannung"), $spannung);
-
 			}
-
-
 
 			If (GetValueFloat($this->GetIDForIdent("Steuerspannung")) <> $spannung) {
 				SetValueFloat($this->GetIDForIdent("Steuerspannung"), $spannung);
 			}
-SetValueFloat($this->GetIDForIdent("Kesselabschaltemperatur"), $kessel_abschaltwert);
+			SetValueFloat($this->GetIDForIdent("Kesselabschaltemperatur"), $kessel_abschaltwert);
+
 			// Wert invertieren
 //			$Intensity = 255 - (intval($spannung / (15 - 2) * 100 * 2.55));
 			$duty_cycle=((($spannung-10)*61000)+657000); //657000 PWM = 10V,  61000 = +0,1V, Startwert ist 10V für die Berechnung
 			$Intensity = $duty_cycle;
  			If (GetValue($this->GetIDForIdent("duty_cycle")) <> $duty_cycle) {
 				SetValue($this->GetIDForIdent("duty_cycle"), $duty_cycle);
-      }
+			}
 			$this->SendDebug("Calculate", "Stellwert: ".$Intensity." Spannung: ".$spannung."V", 0);
 			$wärmebedarf=GetValueBoolean($this->GetIDForIdent("Waermebedarf"));
+
 			If (GetValueFloat($this->GetIDForIdent("Steuerspannung")) < 10.3) {
-				
 				SetValueBoolean($this->GetIDForIdent("Waermebedarf"), 0);
 			}
-			else {
+			else 
+			{
 				SetValueBoolean($this->GetIDForIdent("Waermebedarf"), 1);
 			}
-			
+	
 			$this->Set_PWM($Intensity);
-
-		
     }
+
 	public function Graph()
 	{
 			// Define variables
@@ -492,11 +449,9 @@ SetValueFloat($this->GetIDForIdent("Kesselabschaltemperatur"), $kessel_abschaltw
 			$Soll_Tag = GetValueFloat($this->GetIDForIdent("RaumSolltemperatur"));
 			$Soll_Nacht = GetValueFloat($this->GetIDForIdent("RaumSolltemperaturNacht"));
 			$Raumsollwert= GetValueFloat($this->GetIDForIdent("RaumSolltemperatur"));
-
 			$Aussentemp=GetValueFloat($this->GetIDForIdent("Aussentemperatur"));
 			$Aussentemp_min=GetValueFloat($this->GetIDForIdent("Aussentemperatur"));
 			$Aussentemp_gpio=GetValueFloat($this->GetIDForIdent("Aussentemperatur"));
-		
 			$Kesseltemp=GetValueFloat($this->GetIDForIdent("Vorlauftemperatur"));
 			$Raumsollwert= $Soll_Nacht;//$Soll_Tag ;//12 Nacht
 			$Korrektur_Kessel = GetValueInteger($this->GetIDForIdent("Parallelverschiebung"));
@@ -504,34 +459,23 @@ SetValueFloat($this->GetIDForIdent("Kesselabschaltemperatur"), $kessel_abschaltw
 			$Kessel_faktor = 0;
 			$j=20;
 			for ( $i = 1; $i <= 550; $i++ ) {
-			//   $Values[$i] = min(max(round((0.55*$Steilheit*(pow($Raumsollwert,($j/(320-$j*4))))*((-$j+20)*2)+$Raumsollwert+$Korrektur_Kessel)*1)/1,$min),$max)* 10;
-			   $Values[$i] = (min(max( ((0.55*$Steilheit*(pow($Raumsollwert,($j/(320-$j*4))))*((-$j+20)*2)+$Raumsollwert+$Korrektur_Kessel)*1)/1,$min),$max)+$Kessel_faktor)*10;
-
-			$Test[$i] = $Values[$i];
-			$temp[$i] = $j;
-
-			   $Values[$i] = 800 - $Values[$i] ;
-			   $j=$j-0.1;
-
+				$Values[$i] = (min(max( ((0.55*$Steilheit*(pow($Raumsollwert,($j/(320-$j*4))))*((-$j+20)*2)+$Raumsollwert+$Korrektur_Kessel)*1)/1,$min),$max)+$Kessel_faktor)*10;
+				$Test[$i] = $Values[$i];
+				$temp[$i] = $j;
+				$Values[$i] = 800 - $Values[$i] ;
+				$j=$j-0.1;
 			}
-
 			$Raumsollwert= $Soll_Tag ;//12 Nacht
-			//$Kessel_faktorID = IPS_GetObjectIDByName("Kessel Hysterese", IPS_GetParent($_IPS['SELF']));
-			//$Kessel_faktor = (round(GetValue($Kessel_faktorID)) )-2;
 			$Kessel_faktor = 0;
 			$j=20;
 			for ( $i = 1; $i <= 550; $i++ ) {
-			//   $Values[$i] = min(max(round((0.55*$Steilheit*(pow($Raumsollwert,($j/(320-$j*4))))*((-$j+20)*2)+$Raumsollwert+$Korrektur_Kessel)*1)/1,$min),$max)* 10;
 			   $Values2[$i] = (min(max( ((0.55*$Steilheit*(pow($Raumsollwert,($j/(320-$j*4))))*((-$j+20)*2)+$Raumsollwert+$Korrektur_Kessel)*1)/1,$min),$max)+$Kessel_faktor)*10;
 			   $Values2[$i] = 800 - $Values2[$i] ;
 			   $j=$j-0.1;
 			}
 
-
-
 			$xPoint=50;
 			$yPoint=50;
-
 			$Image = imagecreate( 650, 650 );
 			#1st colour allocated is used for the image background
 			$backColour = imagecolorallocate( $Image, 230, 230, 230 );
@@ -651,7 +595,6 @@ SetValueFloat($this->GetIDForIdent("Kesselabschaltemperatur"), $kessel_abschaltw
 	
 ///////////////////////////////////////////////////////////////////////////////
 
-
 	// PWM auf dem gewaehlten Pin
 	public function Set_PWM(Int $value)
 	{
@@ -663,7 +606,7 @@ SetValueFloat($this->GetIDForIdent("Kesselabschaltemperatur"), $kessel_abschaltw
 
 	// Dallas Bus
 	public function read_dallas()
-  {
+	{
       $wire = GetValue($this->GetIDForIdent("onewireId"));
       $zaehler = GetValue($this->GetIDForIdent("onewirezaehler"));
       $ds_id = explode(" ", $wire);
@@ -682,83 +625,75 @@ SetValueFloat($this->GetIDForIdent("Kesselabschaltemperatur"), $kessel_abschaltw
     			$temp = $temp[1] / 1000;
     			$temp = round($temp,1);
   
-        	$id = $this->CreateVariableByName(IPS_GetParent($this->GetIDForIdent("onewireId")), $ds_id[$i], 2);
-          SetValue($id,$temp);
-    	   }
+				$id = $this->CreateVariableByName(IPS_GetParent($this->GetIDForIdent("onewireId")), $ds_id[$i], 2);
+				SetValue($id,$temp);
+			}
+		}
 	}
 
-  }
 	public function create_dallas()
 	{
-    $zaehler = intval(exec('cat /sys/bus/w1/devices/w1_bus_master1/w1_master_slave_count'));
-    SetValue($this->GetIDForIdent("onewireId"), "");
-    SetValue($this->GetIDForIdent("onewirezaehler"), $zaehler);
-  	$datei = file("/sys/bus/w1/devices/w1_bus_master1/w1_master_slaves");
-  	$i=1;
-  	foreach($datei AS $dallas_id)
-     {
-  	   $ds_id[$i]= $dallas_id;
-        $wire = GetValue($this->GetIDForIdent("onewireId"));
-        $wire = "".$wire." ".$ds_id[$i];
-         SetValue($this->GetIDForIdent("onewireId"), $wire);
-  		$i++;
-     }
+		$zaehler = intval(exec('cat /sys/bus/w1/devices/w1_bus_master1/w1_master_slave_count'));
+		SetValue($this->GetIDForIdent("onewireId"), "");
+		SetValue($this->GetIDForIdent("onewirezaehler"), $zaehler);
+		$datei = file("/sys/bus/w1/devices/w1_bus_master1/w1_master_slaves");
+		$i=1;
+		foreach($datei AS $dallas_id)
+		 {
+		   $ds_id[$i]= $dallas_id;
+			$wire = GetValue($this->GetIDForIdent("onewireId"));
+			$wire = "".$wire." ".$ds_id[$i];
+			 SetValue($this->GetIDForIdent("onewireId"), $wire);
+			$i++;
+		 }
 
-//	Zweiter Dallas Bus
-    $zaehler = $zaehler + (intval(exec('cat /sys/bus/w1/devices/w1_bus_master2/w1_master_slave_count')));
-    SetValue($this->GetIDForIdent("onewirezaehler"), $zaehler);
-  	$datei = file("/sys/bus/w1/devices/w1_bus_master2/w1_master_slaves");
-  	$i=1;
-  	foreach($datei AS $dallas_id)
-     {
-  	   $ds_id[$i]= $dallas_id;
-        $wire = GetValue($this->GetIDForIdent("onewireId"));
-        $wire = "".$wire." ".$ds_id[$i];
-         SetValue($this->GetIDForIdent("onewireId"), $wire);
-  		$i++;
-     }
-     
-     
-    $ds_id = explode(" ", $wire);
-  	for ($i = 1; ; $i++)
-  	{
-  	   if ($i > $zaehler) {
-  	        break;
-        }
-      $ds_id[$i]= trim($ds_id[$i]);
-  		$temp = exec('cat /sys/bus/w1/devices/'.$ds_id[$i].'/w1_slave |grep t=');
-  		$crc = exec('cat /sys/bus/w1/devices/'.$ds_id[$i].'/w1_slave | grep crc | sed "s/^.*\(...\)$/\1/"');
-  		$temp = explode('t=',$temp);
-        //The power-on reset value of the temperature register is +85°C
-  		if($crc =="YES" and $temp[1] !== "-62" and $temp[1]  !== "85000") //Fehler raus, -1.2 Â°C ,85°C und CRC
-  		{ 
-  			$temp = $temp[1] / 1000;
-  			$temp = round($temp,1);
-
-//      $dallas_id = str_replace('-','A',$ds_id[$i]);
-//		var_dump($dallas_id);
-//		$id = $this->RegisterVariableFloat($dallas_id , $dallas_id , "~Temperature",2);
-      	$id = $this->CreateVariableByName(IPS_GetParent($this->GetIDForIdent("onewireId")), $ds_id[$i], 2);
-//		  var_dump($id);
-//        var_dump(IPS_GetParent($this->GetIDForIdent("onewireId")));
-        SetValue($id,$temp);
-  	   }
+	//	Zweiter Dallas Bus
+		$zaehler = $zaehler + (intval(exec('cat /sys/bus/w1/devices/w1_bus_master2/w1_master_slave_count')));
+		SetValue($this->GetIDForIdent("onewirezaehler"), $zaehler);
+		$datei = file("/sys/bus/w1/devices/w1_bus_master2/w1_master_slaves");
+		$i=1;
+		foreach($datei AS $dallas_id)
+		 {
+		   $ds_id[$i]= $dallas_id;
+			$wire = GetValue($this->GetIDForIdent("onewireId"));
+			$wire = "".$wire." ".$ds_id[$i];
+			 SetValue($this->GetIDForIdent("onewireId"), $wire);
+			$i++;
+		 }
+		 
+		$ds_id = explode(" ", $wire);
+		for ($i = 1; ; $i++)
+		{
+			if ($i > $zaehler) {
+				break;
+			}
+			$ds_id[$i]= trim($ds_id[$i]);
+			$temp = exec('cat /sys/bus/w1/devices/'.$ds_id[$i].'/w1_slave |grep t=');
+			$crc = exec('cat /sys/bus/w1/devices/'.$ds_id[$i].'/w1_slave | grep crc | sed "s/^.*\(...\)$/\1/"');
+			$temp = explode('t=',$temp);
+			//The power-on reset value of the temperature register is +85°C
+			if($crc =="YES" and $temp[1] !== "-62" and $temp[1]  !== "85000") //Fehler raus, -1.2 Â°C ,85°C und CRC
+			{ 
+				$temp = $temp[1] / 1000;
+				$temp = round($temp,1);
+				$id = $this->CreateVariableByName(IPS_GetParent($this->GetIDForIdent("onewireId")), $ds_id[$i], 2);
+				SetValue($id,$temp);
+			}
+		}
 	}
-	}	
+	
 	public function SetConfig() 
 	{
 	// Setzen von ersten Parametern beim anlegen.
-       // SetValue($this->GetIDForIdent("Kesselmin"), 20);
-		//SetValue($this->GetIDForIdent("Kesselmax"), 70);
-		
 		If (GetValueFloat($this->GetIDForIdent("Kesselmin")) == 0){SetValue($this->GetIDForIdent("Kesselmin"), 20);}
-        If (GetValueFloat($this->GetIDForIdent("Kesselmax")) == 0){SetValue($this->GetIDForIdent("Kesselmax"), 70);}
+        If (GetValueFloat($this->GetIDForIdent("Kesselmax")) == 0){SetValue($this->GetIDForIdent("Kesselmax"), 60);}
         If (GetValueFloat($this->GetIDForIdent("Sommerumschaltung")) == 0){SetValue($this->GetIDForIdent("Sommerumschaltung"), 20);}
         If (GetValueFloat($this->GetIDForIdent("RaumSolltemperaturNacht"))== 0){SetValue($this->GetIDForIdent("RaumSolltemperaturNacht"), 18.5);}
-        If (GetValueFloat($this->GetIDForIdent("RaumSolltemperatur"))== 0){SetValue($this->GetIDForIdent("RaumSolltemperatur"), 21.5);}
-        If (GetValueFloat($this->GetIDForIdent("Steilheit")) == 0){SetValue($this->GetIDForIdent("Steilheit"), 1);}
+        If (GetValueFloat($this->GetIDForIdent("RaumSolltemperatur"))== 0){SetValue($this->GetIDForIdent("RaumSolltemperatur"), 21);}
+        If (GetValueFloat($this->GetIDForIdent("Steilheit")) == 0){SetValue($this->GetIDForIdent("Steilheit"), 1.1);}
         If (GetValueBoolean($this->GetIDForIdent("UhrHeizungKessel"))== 0){SetValue($this->GetIDForIdent("UhrHeizungKessel"), true);}
 	}
+
 	private function RegisterProfileInteger($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $StepSize)
 	{
 	        if (!IPS_VariableProfileExists($Name))
@@ -794,25 +729,23 @@ SetValueFloat($this->GetIDForIdent("Kesselabschaltemperatur"), $kessel_abschaltw
 			IPS_SetVariableProfileDigits($Name, $digits);			
 	}
 
- private function CreateVariableByName($id, $name, $type)
-  {
-     $vid = @IPS_GetVariableIDByName($name, $id);
-     if($vid===false) {
-        $vid = IPS_CreateVariable($type);
-        IPS_SetParent($vid, $id);
-        IPS_SetName($vid, $name);
-     }
-     return $vid;
-  }  
+	private function CreateVariableByName($id, $name, $type)
+	{
+		$vid = @IPS_GetVariableIDByName($name, $id);
+		if($vid===false) {
+			$vid = IPS_CreateVariable($type);
+			IPS_SetParent($vid, $id);
+			IPS_SetName($vid, $name);
+		}
+		return $vid;
+	}  
 
 	private function CreateWochenplan($name, $Typ, $Var)
 	{
-		//$this->CreateWochenplan("Uhr Heizung", 2,"UhrHeizungKessel");
 		$ParentID = $this->GetIDForIdent($Var);
 		$EreignisID = @IPS_GetEventIDByName($name, $ParentID);
 		if (!IPS_EventExists($EreignisID)) {
 			$eid = IPS_CreateEvent($Typ);                  		//Wochplan
-	//		IPS_SetEventTrigger($eid, 1, 15754);        		//Bei Änderung von Variable mit ID 15754
 			IPS_SetParent($eid,($this->GetIDForIdent($Var)));   //Ereignis zuordnen
 			//Anlegen von Gruppen
 			IPS_SetEventScheduleGroup($eid, 1,1);
@@ -831,28 +764,30 @@ SetValueFloat($this->GetIDForIdent("Kesselabschaltemperatur"), $kessel_abschaltw
 	}
 
 	private function CreateCategoryByName($id, $name)
-  {
-     $vid = @IPS_GetCategoryIDByName( $name, $id);
-     if($vid===false) {
-        $vid = IPS_CreateCategory();     
-        IPS_SetParent($vid, $id);
-        IPS_SetName($vid, $name);
-     }
-     return $vid;
-  }  
+	{
+		$vid = @IPS_GetCategoryIDByName( $name, $id);
+		if($vid===false) {
+			$vid = IPS_CreateCategory();     
+			IPS_SetParent($vid, $id);
+			IPS_SetName($vid, $name);
+		}
+		return $vid;
+	}  
+	
 	private function CreateLinkByName($id, $name, $varID)
-  {
+	{
      $vid = @IPS_GetLinkIDByName( $name, $id);
-     if($vid===false) {
-        $vid = IPS_CreateLink();     
-        IPS_SetParent($vid, $id);
-        IPS_SetName($vid, $name);
-		IPS_SetLinkTargetID($vid, $varID);    // Link verknüpfen
-     }
+		if($vid===false) {
+			$vid = IPS_CreateLink();     
+			IPS_SetParent($vid, $id);
+			IPS_SetName($vid, $name);
+			IPS_SetLinkTargetID($vid, $varID);    // Link verknüpfen
+		}
      return $vid;
-  }  
+	}  
+	
 	private function CreateImageHeizkennline()
-  {
+	{
      $ImageFile = @IPS_GetMediaIDByName("Heizkennline", IPS_GetInstanceIDByName("Heizkennline", 0) );
      if($ImageFile===false) {
 		$ImageFile = "/var/lib/symcon/modules/TS_HeizungsTherme/imgs/Heizkennline.png";  // Image-Datei
@@ -861,7 +796,7 @@ SetValueFloat($this->GetIDForIdent("Kesselabschaltemperatur"), $kessel_abschaltw
 		IPS_SetName($MediaID, "Heizkennline");
      //return $vid;
 	 }
-  }  
+	}  
 	
 }
 

@@ -17,9 +17,9 @@ class TS_HeizungsTherme extends IPSModule {
 		$this->RegisterPropertyInteger("graphtimer_ID", 0);
 
 		// Erstellt einen Timer mit dem Namen "Update" und einem Intervall von 5 Sekunden. 
-		$this->RegisterTimer("Update_Dallas", 10000, 'TSHeizTherme_read_dallas($_IPS["TARGET"]);');
-		$this->RegisterTimer("Update_Regler", 10000, 'TSHeizTherme_UpdateRegler($_IPS["TARGET"]);');
-		$this->RegisterTimer("Update_Graph", 10000, 'TSHeizTherme_Graph($_IPS["TARGET"]);');
+		$this->RegisterTimer("Update_Dallas", 10000, 'TSHEIZT_read_dallas($_IPS["TARGET"]);');
+		$this->RegisterTimer("Update_Regler", 10000, 'TSHEIZT_UpdateRegler($_IPS["TARGET"]);');
+		$this->RegisterTimer("Update_Graph", 10000, 'TSHEIZT_Graph($_IPS["TARGET"]);');
 	}
 	
 	public function Destroy(){

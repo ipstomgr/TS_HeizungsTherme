@@ -363,11 +363,26 @@ class TS_HeizungsTherme extends IPSModule {
 					SetValueInteger($this->GetIDForIdent("Status"), 1);
 				}
 				
-				$KesselSolltemperatur = min(max(round((0.55 * $Steilheit * (pow($Raumsollwert,($Aussentemperatur / (320 - $Aussentemperatur * 4))))*((-$Aussentemperatur + 20) * 2) + $Raumsollwert + $Parallelverschiebung+$boostTemperatur) * 1) / 1, $MinTemp), $MaxTemp);
+				$KesselSolltemperatur = min(max(round((0.55 * $Steilheit * (pow($Raumsollwert,($Aussentemperatur / (320 - $Aussentemperatur * 4))))*((-$Aussentemperatur + 20) * 2) + $Raumsollwert + $Parallelverschiebung) * 1) / 1, $MinTemp), $MaxTemp);
 				SetValueFloat($this->GetIDForIdent("KesselSolltemperatur"), $KesselSolltemperatur);
-				$halbe_hysterese = $hysterese;
-				$kessel_abschaltwert = ($KesselSolltemperatur+$halbe_hysterese);
-				$spannung = ((( ($KesselSolltemperatur+$halbe_hysterese) - 40) / 10) + 12.5);
+				$kessel_abschaltwert = ($KesselSolltemperatur+$hysterese+$boostTemperatur);
+				$ko=12.7;
+				if ($kessel_abschaltwert >= 30){
+					$ko=12.86;
+				}
+				if ($kessel_abschaltwert >= 40){
+					$ko=12.76;
+				}
+				if ($kessel_abschaltwert >= 45){
+					$ko=12.64;
+				}
+				if ($kessel_abschaltwert >= 50){
+					$ko=12.61;
+				}
+				if ($kessel_abschaltwert >= 60){
+					$ko=12.55;
+				}
+				$spannung = ((( ($kessel_abschaltwert) - 43) / 10) + $ko);
 				//$spannung = ((( ($KesselSolltemperatur+$hysterese) - 40) / 10) + 11.9);
 				/* 
 				9,9=15
@@ -385,29 +400,28 @@ class TS_HeizungsTherme extends IPSModule {
 				15,71 = 75
 				*/
 
-				If (($Raumistwert) > ($Raumsollwert + 0.1)) {			
+				If (($Raumistwert) > ($Raumsollwert + 0.2)) {			
 					$halbe_hysterese = $hysterese/2;
-					$kessel_abschaltwert = ($KesselSolltemperatur+$halbe_hysterese);
-					$spannung = ((( ($KesselSolltemperatur+$halbe_hysterese) - 40) / 10) + 12.5);
+					$kessel_abschaltwert = ($KesselSolltemperatur);
+					$spannung = ((( ($KesselSolltemperatur)  - 43) / 10) + $ko);
+				}	
 
-/*
-				If (($Raumistwert) < ($Raumsollwert + 0.1)) {			
-					$spannung = ((( ($KesselSolltemperatur+$hysterese) - 41) / 10) + 12.5);
-					$kessel_abschaltwert = ($KesselSolltemperatur+$hysterese);
-*/
+				If( ($Raumistwert) < ($Raumsollwert - 0.3) and ($Raumistwert) < ($Raumsollwert - 0.5)){
+//				If (($Raumistwert) < ($Raumsollwert - 0.2)) {			
+					$spannung = ((( ($MaxTemp) - 43) / 10) + $ko);
+					$kessel_abschaltwert = ($MaxTemp);
+
 				}
-				if($Raumistwert < ($Raumsollwert -0.5)) {
-					If ($Rücklauftemperatur < ($KesselSolltemperatur+1 /*+$Parallelverschiebung*/)) {
-						$spannung = ((( ($MaxTemp) - 41) / 10) + 12.5);
-						$kessel_abschaltwert = ($MaxTemp);
-					}
+				if($kessel_abschaltwert > ($MaxTemp)) {
+					$spannung = ((( ($MaxTemp) - 43) / 10) + $ko);
+					$kessel_abschaltwert = ($MaxTemp);
 				}	
 			}
 
 			//kein Wärmebedarf, nach Raumtemperatur
             If (($Raumistwert) > ($Raumsollwert + 0.3)) {			
-				$spannung = ((( ($KesselSolltemperatur) - 41) / 10) + 12.5);
-				$kessel_abschaltwert = ($KesselSolltemperatur);
+//				$spannung = ((( ($KesselSolltemperatur) - 41) / 10) + 12.0);
+//				$kessel_abschaltwert = ($KesselSolltemperatur);
 			}
 			// Ende Wärmebedarf, nach Raumtemperatur
 			
@@ -418,17 +432,18 @@ class TS_HeizungsTherme extends IPSModule {
 				If (GetValueFloat($this->GetIDForIdent("KesselSolltemperatur")) <> $MinTemp) {
 					SetValueFloat($this->GetIDForIdent("KesselSolltemperatur"), $MinTemp);
 				}
-				$spannung = ((( ($MinTemp) - 41) / 10) + 12.5);
+				$spannung = ((( ($MinTemp) - 43) / 10) + $ko);
 				$kessel_abschaltwert = ($MinTemp);
 			}
 
-			If (GetValueFloat($this->GetIDForIdent("Steuerspannung")) <> $spannung) {
+//			If (GetValueFloat($this->GetIDForIdent("Steuerspannung")) <> $spannung) {
 				SetValueFloat($this->GetIDForIdent("Steuerspannung"), $spannung);
-			}
+//			}
 			SetValueFloat($this->GetIDForIdent("Kesselabschaltemperatur"), $kessel_abschaltwert);
 
 			// Wert invertieren
 //			$Intensity = 255 - (intval($spannung / (15 - 2) * 100 * 2.55));
+			
 			$duty_cycle=((($spannung-10)*61000)+657000); //657000 PWM = 10V,  61000 = +0,1V, Startwert ist 10V für die Berechnung
 			//864400 =50 - ist aber 55
 			//
@@ -634,7 +649,7 @@ class TS_HeizungsTherme extends IPSModule {
     		if($crc =="YES" and $temp[1] !== "-62" and $temp[1]  !== "85000") //Fehler raus, -1.2 Â°C ,85Â°C und CRC
     		{ 
     			$temp = $temp[1] / 1000;
-    			$temp = round($temp,1);
+    			$temp = round($temp,2);
   
 				$id = $this->CreateVariableByName(IPS_GetParent($this->GetIDForIdent("onewireId")), $ds_id[$i], 2);
 				SetValue($id,$temp);
@@ -683,10 +698,10 @@ class TS_HeizungsTherme extends IPSModule {
 			$crc = exec('cat /sys/bus/w1/devices/'.$ds_id[$i].'/w1_slave | grep crc | sed "s/^.*\(...\)$/\1/"');
 			$temp = explode('t=',$temp);
 			//The power-on reset value of the temperature register is +85°C
-			if($crc =="YES" and $temp[1] !== "-62" and $temp[1]  !== "85000") //Fehler raus, -1.2 Â°C ,85°C und CRC
+			if($crc =="YES" and $temp[1] !== "-62" and $temp[1]  !== "85000") //Fehler raus, -1.2 °C ,85°C und CRC
 			{ 
 				$temp = $temp[1] / 1000;
-				$temp = round($temp,1);
+				//$temp = round($temp,1);
 				$id = $this->CreateVariableByName(IPS_GetParent($this->GetIDForIdent("onewireId")), $ds_id[$i], 2);
 				SetValue($id,$temp);
 			}

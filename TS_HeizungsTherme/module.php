@@ -357,6 +357,7 @@ class TS_HeizungsTherme extends IPSModule {
 
 			$boostTemperatur =GetValueInteger($this->GetIDForIdent("boostTemperatur")); 
 			$hysterese= GetValueInteger($this->GetIDForIdent("ThermeHysterese"));
+			$ko=12.7;
 			If ($Aussentemperatur < $SommerTemp) {
 				// Winterbetrieb
 				If (GetValueInteger($this->GetIDForIdent("Status")) <> 1) {
@@ -366,7 +367,7 @@ class TS_HeizungsTherme extends IPSModule {
 				$KesselSolltemperatur = min(max(round((0.55 * $Steilheit * (pow($Raumsollwert,($Aussentemperatur / (320 - $Aussentemperatur * 4))))*((-$Aussentemperatur + 20) * 2) + $Raumsollwert + $Parallelverschiebung) * 1) / 1, $MinTemp), $MaxTemp);
 				SetValueFloat($this->GetIDForIdent("KesselSolltemperatur"), $KesselSolltemperatur);
 				$kessel_abschaltwert = ($KesselSolltemperatur+$hysterese+$boostTemperatur);
-				$ko=12.7;
+				
 				if ($kessel_abschaltwert >= 30){
 					$ko=12.86;
 				}
@@ -432,7 +433,7 @@ class TS_HeizungsTherme extends IPSModule {
 				If (GetValueFloat($this->GetIDForIdent("KesselSolltemperatur")) <> $MinTemp) {
 					SetValueFloat($this->GetIDForIdent("KesselSolltemperatur"), $MinTemp);
 				}
-				$spannung = ((( ($MinTemp) - 43) / 10) + $ko);
+				$spannung = ((( ($MinTemp) - 43) / 10) +$ko);
 				$kessel_abschaltwert = ($MinTemp);
 			}
 

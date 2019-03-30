@@ -13,10 +13,10 @@
 	],
   "actions":
   [
-		{ "type": "Button", "label": "Create Dallas", "onClick": "TSHeizTherme_create_dallas($id);" },
-		{ "type": "Button", "label": "Update Graph",  "onClick": "TSHeizTherme_Graph($id);" },
-		{ "type": "Button", "label": "Update Dallas", "onClick": "TSHeizTherme_UpdateValue($id);" },
+		{ "type": "Button", "label": "Create Dallas", "onClick": "TSHeiz_create_dallas($id);" },
+		{ "type": "Button", "label": "Update Graph",  "onClick": "TSHeiz_Graph($id);" },
+		{ "type": "Button", "label": "Update Dallas", "onClick": "TSHeiz_UpdateValue($id);" },
 		{ "type": "Label",  "label": "Sollwerte vorbesetzen, die noch auf 0 stehen" },
-		{ "type": "Button", "label": "Sollwerte setzen",     "onClick": "TSHeizTherme_SetConfig($id);" }		
+		{ "type": "Button", "label": "Sollwerte setzen",     "onClick": "TSHeiz_SetConfig($id);" }		
   ]
 }

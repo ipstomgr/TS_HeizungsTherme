@@ -1,4 +1,4 @@
-<?
+<?php
 class TS_HeizungsTherme extends IPSModule {
 
     // Überschreibt die interne IPS_Create($id) Funktion
@@ -826,5 +826,3 @@ class TS_HeizungsTherme extends IPSModule {
 	}  
 	
 }
-
-?>

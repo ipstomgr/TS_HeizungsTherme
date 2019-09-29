@@ -420,9 +420,9 @@ class TS_HeizungsTherme extends IPSModule {
 			}
 
 			//kein Wärmebedarf, nach Raumtemperatur
-            If (($Raumistwert) > ($Raumsollwert + 0.3)) {			
-//				$spannung = ((( ($KesselSolltemperatur) - 41) / 10) + 12.0);
-//				$kessel_abschaltwert = ($KesselSolltemperatur);
+            If (($Raumistwert) > ($Raumsollwert + 1)) {			
+				$spannung = ((( ($MinTemp) - 43) / 10) +$ko);
+				$kessel_abschaltwert = ($MinTemp);
 			}
 			// Ende Wärmebedarf, nach Raumtemperatur
 			
